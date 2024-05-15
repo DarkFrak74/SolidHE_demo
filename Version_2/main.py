@@ -1,13 +1,17 @@
 import Node1, Node2
 
-# Simple 2 nodes system, communication using files
+# Simple 2 node system, communication using files
+# Multi-layer multiplications. Tolerance and result test
+
+# TODO MODIFY NODES AND MAIN TO USE THE SOLID PROXY
 
 def main():
     v1 = [1.0, 2.0, 3.0, 4.0]
     v2 = [12.5, 13.5, 14.5, 15.5]
 
     # Number of "levels of multiplication" allowed. Higher mult_dept -> Bigger files (and slower operations? #TODO Check)
-    mult_depth = 1
+    # IF THIS IS LOWER THAN THE NUMBER OF MULTIPLICATIONS DONE AN ERROR IS RAISED
+    mult_depth = 2
 
     # The scaling factor is 2^scale_mod_size
     # This value should be approx 20 + desired precision (30 bits in this case). Higher scale size -> Bigger files and slower operations
