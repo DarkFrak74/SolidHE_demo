@@ -1,25 +1,30 @@
 import openfhe
 import numpy as np
+import Solid_proxy
 
 # FILES PATH DEFINITION
 
 # Save-Load locations for keys
-datafolder = 'demoData'
-ccLocation = '/cryptocontext.txt'
-pubKeyLocation = '/key_pub.txt'  # Pub key
-multKeyLocation = '/key_mult.txt'  # relinearization key
-rotKeyLocation = '/key_rot.txt'  # automorphism / rotation key
+mylocalfolder = "Node1"
+mypodfolder = "Node1"
+
+evaluatorpodfolder = "Node2"
+
+ccLocation = '/cryptocontext'
+pubKeyLocation = '/key_pub'  # Pub key
+multKeyLocation = '/key_mult'  # relinearization key
+rotKeyLocation = '/key_rot'  # automorphism / rotation key
 
 # Save-load locations for RAW ciphertexts
-cipherOneLocation = '/ciphertext1.txt'
-cipherTwoLocation = '/ciphertext2.txt'
+cipherOneLocation = '/ciphertext1'
+cipherTwoLocation = '/ciphertext2'
 
 # Save-load locations for evaluated ciphertexts
-cipherMultLocation = '/ciphertextMult.txt'
-cipherMult3Location = '/ciphertextMult3.txt'
-cipherAddLocation = '/ciphertextAdd.txt'
-cipherRotLocation = '/ciphertextRot.txt'
-cipherRotNegLocation = '/ciphertextRotNegLocation.txt'
+cipherMultLocation = '/ciphertextMult'
+cipherAddLocation = '/ciphertextAdd'
+cipherRotLocation = '/ciphertextRot'
+cipherRotNegLocation = '/ciphertextRotNegLocation'
+clientVectorLocation = '/clientVectorFromClient'
 
 
 # Demarcate - Visual separator between the sections of code
@@ -34,6 +39,7 @@ def demarcate(msg):
 #  - Setup Crypto Context
 #  - Encrypt data
 #  - Serialize data to files
+#  - Save data to Pod
 # @params v1,v2,Key generation parameters
 # @return
 #  2-tuple of generated CryptoContext, Keypair
@@ -102,27 +108,54 @@ def node1_setup_encrypt_serialize(v1,v2, multDepth, scaleModSize, batchSize):
     ###
     demarcate("Part 1c: Data Serialization (Node 1)")
 
-    if not openfhe.SerializeToFile(datafolder + ccLocation, node1CC, openfhe.BINARY):
+    if not openfhe.SerializeToFile(mylocalfolder + ccLocation, node1CC, openfhe.BINARY):
         raise Exception("Exception writing cryptocontext to cryptocontext.txt")
     print("Cryptocontext serialized")
 
-    if not openfhe.SerializeToFile(datafolder + pubKeyLocation, node1KP.publicKey, openfhe.BINARY):
+    if not openfhe.SerializeToFile(mylocalfolder + pubKeyLocation, node1KP.publicKey, openfhe.BINARY):
         raise Exception("Exception writing public key to pubkey.txt")
     print("Public key has been serialized")
 
-    if not node1CC.SerializeEvalMultKey(datafolder + multKeyLocation, openfhe.BINARY):
+    if not node1CC.SerializeEvalMultKey(mylocalfolder + multKeyLocation, openfhe.BINARY):
         raise Exception("Error writing eval mult keys")
     print("EvalMult/ relinearization keys have been serialized")
 
-    if not node1CC.SerializeEvalAutomorphismKey(datafolder + rotKeyLocation, openfhe.BINARY):
+    if not node1CC.SerializeEvalAutomorphismKey(mylocalfolder + rotKeyLocation, openfhe.BINARY):
         raise Exception("Error writing rotation keys")
     print("Rotation keys have been serialized")
 
-    if not openfhe.SerializeToFile(datafolder + cipherOneLocation, node1C1, openfhe.BINARY):
+    if not openfhe.SerializeToFile(mylocalfolder + cipherOneLocation, node1C1, openfhe.BINARY):
         raise Exception("Error writing ciphertext 1")
 
-    if not openfhe.SerializeToFile(datafolder + cipherTwoLocation, node1C2, openfhe.BINARY):
+    if not openfhe.SerializeToFile(mylocalfolder + cipherTwoLocation, node1C2, openfhe.BINARY):
         raise Exception("Error writing ciphertext 2")
+
+
+    # Part 1d: Saving generated files from my local folder to my pod
+
+    demarcate("Part 1d: Saving data into SolidPod (Node 1)")
+
+    if not Solid_proxy.write_data_to_pod(mypodfolder, mylocalfolder, ccLocation):
+        raise Exception("Exception writing cryptocontext to SolidPod")
+    print("Cryptocontext saved to pod")
+
+    if not Solid_proxy.write_data_to_pod(mypodfolder,mylocalfolder, pubKeyLocation):
+        raise Exception("Exception writing public key to SolidPod")
+    print("Public key saved to pod")
+
+    if not Solid_proxy.write_data_to_pod(mypodfolder,mylocalfolder, multKeyLocation):
+        raise Exception("Error writing eval mult keys to SolidPod")
+    print("EvalMult/ relinearization keys saved to pod")
+
+    if not Solid_proxy.write_data_to_pod(mypodfolder,mylocalfolder, rotKeyLocation):
+        raise Exception("Error writing rotation keys to SolidPod")
+    print("Rotation keys saved to pod")
+
+    if not Solid_proxy.write_data_to_pod(mypodfolder,mylocalfolder, cipherOneLocation):
+        raise Exception("Error writing ciphertext 1 to SolidPod")
+
+    if not Solid_proxy.write_data_to_pod(mypodfolder,mylocalfolder, cipherTwoLocation):
+        raise Exception("Error writing ciphertext 2 to SolidPod")
 
     return (node1CC, node1KP)
 
@@ -130,6 +163,7 @@ def node1_setup_encrypt_serialize(v1,v2, multDepth, scaleModSize, batchSize):
 
 ###
 #  node1DeserializeDecryptVerify
+#  - Download data from Node2 pod
 #  - deserialize data from the client.
 #  - Verify that the results are as we expect
 # @params v1,v2 vectors for result verification
@@ -140,33 +174,38 @@ def node1_setup_encrypt_serialize(v1,v2, multDepth, scaleModSize, batchSize):
 #  5-tuple of the plaintexts of various operations
 ##
 def node1_deserialize_decrypt_verify(v1,v2,cc, kp, vectorSize):
-    demarcate("Part 3a: Result deserialization (Node 1)")
-    node1CiphertextFromNode2_Mult, res = openfhe.DeserializeCiphertext(datafolder + cipherMultLocation, openfhe.BINARY)
-    node1CiphertextFromNode2_Mult3, res = openfhe.DeserializeCiphertext(datafolder + cipherMult3Location, openfhe.BINARY)
-    node1CiphertextFromNode2_Add, res = openfhe.DeserializeCiphertext(datafolder + cipherAddLocation, openfhe.BINARY)
-    node1CiphertextFromNode2_Rot, res = openfhe.DeserializeCiphertext(datafolder + cipherRotLocation, openfhe.BINARY)
-    node1CiphertextFromNode2_RotNeg, res = openfhe.DeserializeCiphertext(datafolder + cipherRotNegLocation, openfhe.BINARY)
+    demarcate("Part 3a: Read computed data from Node2's pod and write them in my local folder (Node 1)")
+
+    Solid_proxy.read_data_from_pod(evaluatorpodfolder, mylocalfolder, cipherAddLocation)
+    Solid_proxy.read_data_from_pod(evaluatorpodfolder, mylocalfolder, cipherMultLocation)
+    Solid_proxy.read_data_from_pod(evaluatorpodfolder, mylocalfolder, cipherRotLocation)
+    Solid_proxy.read_data_from_pod(evaluatorpodfolder, mylocalfolder, cipherRotNegLocation)
+
+
+
+    demarcate("Part 3b: Result deserialization (Node 1)")
+    node1CiphertextFromNode2_Mult, res = openfhe.DeserializeCiphertext(mylocalfolder + cipherMultLocation, openfhe.BINARY)
+    node1CiphertextFromNode2_Add, res = openfhe.DeserializeCiphertext(mylocalfolder + cipherAddLocation, openfhe.BINARY)
+    node1CiphertextFromNode2_Rot, res = openfhe.DeserializeCiphertext(mylocalfolder + cipherRotLocation, openfhe.BINARY)
+    node1CiphertextFromNode2_RotNeg, res = openfhe.DeserializeCiphertext(mylocalfolder + cipherRotNegLocation, openfhe.BINARY)
     print("Deserialized all data from client on server\n")
 
 
-    demarcate("Part 3b: Result Decryption (Node 1)")
+    demarcate("Part 3c: Result Decryption (Node 1)")
 
     node1PlaintextFromNode2_Mult = cc.Decrypt(kp.secretKey, node1CiphertextFromNode2_Mult)
-    node1PlaintextFromNode2_Mult3 = cc.Decrypt(kp.secretKey, node1CiphertextFromNode2_Mult3)
     node1PlaintextFromNode2_Add = cc.Decrypt(kp.secretKey, node1CiphertextFromNode2_Add)
     node1PlaintextFromNode2_Rot = cc.Decrypt(kp.secretKey, node1CiphertextFromNode2_Rot)
     node1PlaintextFromNode2_RotNeg = cc.Decrypt(kp.secretKey, node1CiphertextFromNode2_RotNeg)
 
-    # Set the correct vector size
     node1PlaintextFromNode2_Mult.SetLength(vectorSize)
-    node1PlaintextFromNode2_Mult3.SetLength(vectorSize)
     node1PlaintextFromNode2_Add.SetLength(vectorSize)
 
     # Size 5 instead of 4 to display rotation
     node1PlaintextFromNode2_Rot.SetLength(vectorSize + 1)
     node1PlaintextFromNode2_RotNeg.SetLength(vectorSize + 1)
 
-    demarcate("Part 3c: Result Verification (Node 1)")
+    demarcate("Part 3d: Result Verification (Node 1)")
     v1_np = np.array(v1)
     v2_np = np.array(v2)
     print(f"v1: {v1_np}")
@@ -177,9 +216,6 @@ def node1_deserialize_decrypt_verify(v1,v2,cc, kp, vectorSize):
 
     expected_mult = v1_np * v2_np
     print(f"Mult: EXPECTED = {expected_mult} ACTUAL = {node1PlaintextFromNode2_Mult}")
-
-    expected_mult3 = v1_np * v1_np * v2_np
-    print(f"Mult3: EXPECTED = {expected_mult3} ACTUAL = {node1PlaintextFromNode2_Mult3}")
 
     print("Displaying 5 elements of a 4-element vector to illustrate rotation")
     expected_rot = [v1[1],v1[2],v1[3],"noise","noise"]

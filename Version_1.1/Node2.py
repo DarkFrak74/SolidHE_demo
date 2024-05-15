@@ -45,9 +45,9 @@ def node2_deserialize_computate_serialize():
 
     '''
     # Node2 does NOT have a secret key. It has only access to the public key # TODO CHECK IF NEEDED
-    node2PublicKey, res = openfhe.DeserializePublicKey(datafolder + pubKeyLocation, openfhe.BINARY)
+    node2PublicKey, res = openfhe.DeserializePublicKey(mydatafolder + pubKeyLocation, openfhe.BINARY)
     if not res:
-        raise Exception(f"I cannot deserialize the public key from {datafolder + pubKeyLocation}")
+        raise Exception(f"I cannot deserialize the public key from {mydatafolder + pubKeyLocation}")
     print("Node2: Public Key deserialized\n")
     '''
 

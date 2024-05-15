@@ -1,9 +1,8 @@
 import Node1, Node2
 
-# Simple 2 node system, communication using files
-# Multi-layer multiplications. Tolerance and result test
+# 2 node system + storage on SolidPod. Intermediate serialization to files is required (python wrapper does not support serialize to streams at this stage)
 
-# TODO MODIFY NODES AND MAIN TO USE THE SOLID PROXY
+# TODO remove local files
 
 def main():
     v1 = [1.0, 2.0, 3.0, 4.0]
@@ -11,7 +10,7 @@ def main():
 
     # Number of "levels of multiplication" allowed. Higher mult_dept -> Bigger files (and slower operations? #TODO Check)
     # IF THIS IS LOWER THAN THE NUMBER OF MULTIPLICATIONS DONE AN ERROR IS RAISED
-    mult_depth = 2
+    mult_depth = 1
 
     # The scaling factor is 2^scale_mod_size
     # This value should be approx 20 + desired precision (30 bits in this case). Higher scale size -> Bigger files and slower operations
@@ -36,9 +35,5 @@ def main():
     # Step 3
     Node1.node1_deserialize_decrypt_verify(v1, v2, cc, keypair, len(v1))
 
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     main()
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
