@@ -9,7 +9,7 @@ def main():
 
     # Number of "levels of multiplication" allowed. Higher mult_dept -> Bigger files (and slower operations? #TODO Check)
     # IF THIS IS LOWER THAN THE NUMBER OF MULTIPLICATIONS DONE AN ERROR IS RAISED
-    mult_depth = 2
+    mult_depth = 1
 
     # The scaling factor is 2^scale_mod_size
     # This value should be approx 20 + desired precision (30 bits in this case). Higher scale size -> Bigger files and slower operations

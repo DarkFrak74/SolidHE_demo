@@ -1,3 +1,5 @@
+import os
+
 import openfhe
 import Solid_proxy
 
@@ -23,7 +25,7 @@ cipherTwoLocation = '/ciphertext2'
 cipherMultLocation = '/ciphertextMult'
 cipherAddLocation = '/ciphertextAdd'
 cipherRotLocation = '/ciphertextRot'
-cipherRotNegLocation = '/ciphertextRotNegLocation'
+cipherRotNegLocation = '/ciphertextRotNeg'
 
 
 # Demarcate - Visual separator between the sections of code
@@ -83,6 +85,14 @@ def node2_deserialize_computate_serialize():
         raise Exception(f"Cannot deserialize the ciphertext from {datafolder + cipherTwoLocation}")
     print("Node2: Deserialized ciphertext 2\n")
 
+    # Remove of local files
+    os.remove(mylocalfolder + ccLocation)
+    os.remove(mylocalfolder + pubKeyLocation)
+    os.remove(mylocalfolder + multKeyLocation)
+    os.remove(mylocalfolder + rotKeyLocation)
+    os.remove(mylocalfolder + cipherOneLocation)
+    os.remove(mylocalfolder + cipherTwoLocation)
+
     demarcate("Part 2c: Computation (Node 2)")
 
     # C1*C2
@@ -125,3 +135,9 @@ def node2_deserialize_computate_serialize():
     if not Solid_proxy.write_data_to_pod(mypodfolder, mylocalfolder, cipherRotNegLocation):
         raise Exception("Exception writing RotNegResult to SolidPod")
     print("RotNegResult saved to pod")
+
+    # Remove of local files
+    os.remove(mylocalfolder + cipherMultLocation)
+    os.remove(mylocalfolder + cipherAddLocation)
+    os.remove(mylocalfolder + cipherRotLocation)
+    os.remove(mylocalfolder + cipherRotNegLocation)

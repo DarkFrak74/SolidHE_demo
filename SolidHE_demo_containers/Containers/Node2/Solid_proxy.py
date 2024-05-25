@@ -1,5 +1,4 @@
 import requests
-import rdflib
 
 server_url = "http://localhost:3000"
 pod_name = "SolidHE-pod"
@@ -41,5 +40,5 @@ def resources_deleter(folder, resources_list):
     print(f"{base_url}/{folder}")
     print(requests.delete(f"{base_url}/{folder}/").status_code)
 
-resources_deleter("Node1", ["ciphertext1", "ciphertext2", "cryptocontext", "key_mult", "key_pub", "key_rot"])
-resources_deleter("Node2", ["ciphertextMult", "ciphertextAdd", "ciphertextRot", "ciphertextRotNeg"])
+#resources_deleter("Node1", ["ciphertext1", "ciphertext2", "cryptocontext", "key_mult", "key_pub", "key_rot"])
+#resources_deleter("Node2", ["ciphertextMult", "ciphertextAdd", "ciphertextRot", "ciphertextRotNeg"])

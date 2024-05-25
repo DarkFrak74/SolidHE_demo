@@ -1,6 +1,7 @@
-import Node1, Node2
+import Node1
+import time
 
-# 2 node system + storage on SolidPod. Intermediate serialization to files is required (python wrapper does not support serialize to streams at this stage)
+# 2 containers for nodes + container with storage on SolidPod. Intermediate serialization to files is required (python wrapper does not support serialize to streams at this stage)
 
 def main():
     v1 = [1.0, 2.0, 3.0, 4.0]
@@ -22,13 +23,15 @@ def main():
     # scaleModSize = 40
     # batchSize = 32
 
+    time.sleep(10)
+
     # Step 1
     node1SetupTuple = Node1.node1_setup_encrypt_serialize(v1, v2, mult_depth, scale_mod_size, batch_size)
     cc = node1SetupTuple[0]
     keypair = node1SetupTuple[1]
 
     # Step 2
-    Node2.node2_deserialize_computate_serialize()
+    time.sleep(15)  # Wait for Node2 computations
 
     # Step 3
     Node1.node1_deserialize_decrypt_verify(v1, v2, cc, keypair, len(v1))

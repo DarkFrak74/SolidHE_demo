@@ -6,25 +6,25 @@ import os
 # FILES PATH DEFINITION
 
 # Save-Load locations for keys
-mylocalfolder = "Node1"
+mylocalfolder = "LocalData"
 mypodfolder = "Node1"
 
 evaluatorpodfolder = "Node2"
 
-ccLocation = '/cryptocontext'
-pubKeyLocation = '/key_pub'  # Pub key
-multKeyLocation = '/key_mult'  # relinearization key
-rotKeyLocation = '/key_rot'  # automorphism / rotation key
+ccLocation = 'cryptocontext'
+pubKeyLocation = 'key_pub'  # Pub key
+multKeyLocation = 'key_mult'  # relinearization key
+rotKeyLocation = 'key_rot'  # automorphism / rotation key
 
 # Save-load locations for RAW ciphertexts
-cipherOneLocation = '/ciphertext1'
-cipherTwoLocation = '/ciphertext2'
+cipherOneLocation = 'ciphertext1'
+cipherTwoLocation = 'ciphertext2'
 
 # Save-load locations for evaluated ciphertexts
-cipherMultLocation = '/ciphertextMult'
-cipherAddLocation = '/ciphertextAdd'
-cipherRotLocation = '/ciphertextRot'
-cipherRotNegLocation = '/ciphertextRotNeg'
+cipherMultLocation = 'ciphertextMult'
+cipherAddLocation = 'ciphertextAdd'
+cipherRotLocation = 'ciphertextRot'
+cipherRotNegLocation = 'ciphertextRotNeg'
 
 
 # Demarcate - Visual separator between the sections of code
@@ -108,26 +108,26 @@ def node1_setup_encrypt_serialize(v1,v2, multDepth, scaleModSize, batchSize):
     ###
     demarcate("Part 1c: Data Serialization (Node 1)")
 
-    if not openfhe.SerializeToFile(mylocalfolder + ccLocation, node1CC, openfhe.BINARY):
+    if not openfhe.SerializeToFile(f"{mylocalfolder}/{ccLocation}", node1CC, openfhe.BINARY):
         raise Exception("Exception writing cryptocontext to cryptocontext.txt")
     print("Cryptocontext serialized")
 
-    if not openfhe.SerializeToFile(mylocalfolder + pubKeyLocation, node1KP.publicKey, openfhe.BINARY):
+    if not openfhe.SerializeToFile(f"{mylocalfolder}/{pubKeyLocation}", node1KP.publicKey, openfhe.BINARY):
         raise Exception("Exception writing public key to pubkey.txt")
     print("Public key has been serialized")
 
-    if not node1CC.SerializeEvalMultKey(mylocalfolder + multKeyLocation, openfhe.BINARY):
+    if not node1CC.SerializeEvalMultKey(f"{mylocalfolder}/{multKeyLocation}", openfhe.BINARY):
         raise Exception("Error writing eval mult keys")
     print("EvalMult/ relinearization keys have been serialized")
 
-    if not node1CC.SerializeEvalAutomorphismKey(mylocalfolder + rotKeyLocation, openfhe.BINARY):
+    if not node1CC.SerializeEvalAutomorphismKey(f"{mylocalfolder}/{rotKeyLocation}", openfhe.BINARY):
         raise Exception("Error writing rotation keys")
     print("Rotation keys have been serialized")
 
-    if not openfhe.SerializeToFile(mylocalfolder + cipherOneLocation, node1C1, openfhe.BINARY):
+    if not openfhe.SerializeToFile(f"{mylocalfolder}/{cipherOneLocation}", node1C1, openfhe.BINARY):
         raise Exception("Error writing ciphertext 1")
 
-    if not openfhe.SerializeToFile(mylocalfolder + cipherTwoLocation, node1C2, openfhe.BINARY):
+    if not openfhe.SerializeToFile(f"{mylocalfolder}/{cipherTwoLocation}", node1C2, openfhe.BINARY):
         raise Exception("Error writing ciphertext 2")
 
 
@@ -158,12 +158,12 @@ def node1_setup_encrypt_serialize(v1,v2, multDepth, scaleModSize, batchSize):
         raise Exception("Error writing ciphertext 2 to SolidPod")
 
     # Remove of local files
-    os.remove(mylocalfolder + ccLocation)
-    os.remove(mylocalfolder + pubKeyLocation)
-    os.remove(mylocalfolder + multKeyLocation)
-    os.remove(mylocalfolder + rotKeyLocation)
-    os.remove(mylocalfolder + cipherOneLocation)
-    os.remove(mylocalfolder + cipherTwoLocation)
+    os.remove(f"{mylocalfolder}/{ccLocation}")
+    os.remove(f"{mylocalfolder}/{pubKeyLocation}")
+    os.remove(f"{mylocalfolder}/{multKeyLocation}")
+    os.remove(f"{mylocalfolder}/{rotKeyLocation}")
+    os.remove(f"{mylocalfolder}/{cipherOneLocation}")
+    os.remove(f"{mylocalfolder}/{cipherTwoLocation}")
 
     return (node1CC, node1KP)
 
@@ -192,17 +192,17 @@ def node1_deserialize_decrypt_verify(v1,v2,cc, kp, vectorSize):
 
 
     demarcate("Part 3b: Result deserialization (Node 1)")
-    node1CiphertextFromNode2_Mult, res = openfhe.DeserializeCiphertext(mylocalfolder + cipherMultLocation, openfhe.BINARY)
-    node1CiphertextFromNode2_Add, res = openfhe.DeserializeCiphertext(mylocalfolder + cipherAddLocation, openfhe.BINARY)
-    node1CiphertextFromNode2_Rot, res = openfhe.DeserializeCiphertext(mylocalfolder + cipherRotLocation, openfhe.BINARY)
-    node1CiphertextFromNode2_RotNeg, res = openfhe.DeserializeCiphertext(mylocalfolder + cipherRotNegLocation, openfhe.BINARY)
+    node1CiphertextFromNode2_Mult, res = openfhe.DeserializeCiphertext(f"{mylocalfolder}/{cipherMultLocation}", openfhe.BINARY)
+    node1CiphertextFromNode2_Add, res = openfhe.DeserializeCiphertext(f"{mylocalfolder}/{cipherAddLocation}", openfhe.BINARY)
+    node1CiphertextFromNode2_Rot, res = openfhe.DeserializeCiphertext(f"{mylocalfolder}/{cipherRotLocation}", openfhe.BINARY)
+    node1CiphertextFromNode2_RotNeg, res = openfhe.DeserializeCiphertext(f"{mylocalfolder}/{cipherRotNegLocation}", openfhe.BINARY)
     print("Deserialized all data from client on server\n")
 
     # Remove of local files
-    os.remove(mylocalfolder + cipherMultLocation)
-    os.remove(mylocalfolder + cipherAddLocation)
-    os.remove(mylocalfolder + cipherRotLocation)
-    os.remove(mylocalfolder + cipherRotNegLocation)
+    os.remove(f"{mylocalfolder}/{cipherMultLocation}")
+    os.remove(f"{mylocalfolder}/{cipherAddLocation}")
+    os.remove(f"{mylocalfolder}/{cipherRotLocation}")
+    os.remove(f"{mylocalfolder}/{cipherRotNegLocation}")
 
     demarcate("Part 3c: Result Decryption (Node 1)")
 
