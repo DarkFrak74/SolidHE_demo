@@ -23,7 +23,7 @@ def main():
     # scaleModSize = 40
     # batchSize = 32
 
-    time.sleep(10)
+    time.sleep(10)      # WAIT FOR THE SERVER TO PROPERLY START-UP
 
     # Step 1
     node1SetupTuple = Node1.node1_setup_encrypt_serialize(v1, v2, mult_depth, scale_mod_size, batch_size)
